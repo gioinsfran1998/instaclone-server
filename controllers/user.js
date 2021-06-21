@@ -14,19 +14,18 @@ function createToken(user, SECRET_KEY, expiresIn) {
 }
 
 async function register(input) {
-	console.log('Registrando user');
 	const newUser = input;
 	newUser.email = newUser.email.toLowerCase();
 	newUser.username = newUser.username.toLowerCase();
 	const { username, email, password } = newUser;
 
-	// Verificamos si el email esta en usoß
+	// Verificamos si el email esta en uso
 	const foundEmail = await User.findOne({ email });
 	if (foundEmail) throw new Error('Email ya esta en uso');
 
 	// Verificamos si el email esta en uso
 	const foundUsername = await User.findOne({ username });
-	if (foundEmail) throw new Error('Nombre de usuario ya esta en uso');
+	if (foundUsername) throw new Error('Nombre de usuario ya esta en uso');
 
 	// Encriptar
 
@@ -36,9 +35,12 @@ async function register(input) {
 	try {
 		const user = new User(newUser);
 		user.save();
+		console.log(user, '======= try ======');
 		return user;
 	} catch (error) {
 		console.log(error);
+		console.log('Error Catch');
+		return error;
 	}
 }
 
@@ -46,12 +48,10 @@ async function login(input) {
 	const { email, password } = input;
 
 	const userFound = await User.findOne({ email: email.toLowerCase() });
-	if (!userFound) throw new Error('Error en el email o password');
-
-	console.log(userFound);
+	if (!userFound) throw new Error('Email o constrasenha invalida');
 
 	const passwordSucess = await bcryptjs.compare(password, userFound.password);
-	if (!passwordSucess) throw new Error('Error en el email o password');
+	if (!passwordSucess) throw new Error('Email o constrasenha invalida');
 
 	return {
 		token: createToken(userFound, process.env.SECRET_KEY, '24h'),
